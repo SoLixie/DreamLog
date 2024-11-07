@@ -1,0 +1,54 @@
+PODS:
+  - device_info_plus (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - google_fit (0.0.1):
+    - Flutter
+  - health (1.0.4):
+    - Flutter
+  - sensors_plus (0.0.1):
+    - Flutter
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - video_player_avfoundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - Flutter (from `Flutter`)
+  - google_fit (from `.symlinks/plugins/google_fit/ios`)
+  - health (from `.symlinks/plugins/health/ios`)
+  - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+  - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
+
+EXTERNAL SOURCES:
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
+  Flutter:
+    :path: Flutter
+  google_fit:
+    :path: ".symlinks/plugins/google_fit/ios"
+  health:
+    :path: ".symlinks/plugins/health/ios"
+  sensors_plus:
+    :path: ".symlinks/plugins/sensors_plus/ios"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
+  video_player_avfoundation:
+    :path: ".symlinks/plugins/video_player_avfoundation/darwin"
+
+SPEC CHECKSUMS:
+  device_info_plus: 97af1d7e84681a90d0693e63169a5d50e0839a0d
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  google_fit: 5158923e11d39e06319250a91e3b741a59911d8d
+  health: 5d10c4296a95f6be50a8131d47d3cb3ad640bdf5
+  sensors_plus: 7229095999f30740798f0eeef5cd120357a8f4f2
+  sqflite_darwin: a553b1fd6fe66f53bbb0fe5b4f5bab93f08d7a13
+  video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
+
+PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
+
+COCOAPODS: 1.15.2

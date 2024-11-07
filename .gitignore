@@ -1,0 +1,17 @@
+# Flutter/Dart/Pub related
+**/ios/Flutter/.generated/
+**/build/
+*.dart_tool/
+.packages
+.pub/
+.idea/
+.vscode/
+
+# Android Studio related
+.android/
+*.iml
+*.ipr
+
+# Xcode related
+*.xcworkspace/
+*.xcodeproj/
