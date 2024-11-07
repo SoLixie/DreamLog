@@ -98,6 +98,7 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
         leading: Container(),
       ),
       body: Container(
+        height: MediaQuery.of(context).size.height, // Ensure full height of the screen
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/background.png'),
@@ -115,6 +116,7 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                   label: 'Dream Title',
                   controller: _titleController,
                   maxLines: 1,
+                  textColor: Colors.black,  // Set text color to black for better visibility
                 ),
                 const SizedBox(height: 20),
 
@@ -123,6 +125,7 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                   label: 'Dream Description',
                   controller: _descriptionController,
                   maxLines: 5,
+                  textColor: Colors.black,  // Set text color to black for better visibility
                 ),
                 const SizedBox(height: 20),
 
@@ -147,6 +150,7 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                       _selectedDreamType = newValue;
                     });
                   },
+                  textColor: Colors.black,  // Set text color to black for better visibility
                 ),
                 const SizedBox(height: 20),
 
@@ -163,7 +167,7 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                     ),
                     const Text(
                       'Mark as Favorite',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.black),  // Set text color to black for visibility
                     ),
                   ],
                 ),
@@ -196,21 +200,22 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
     required String label,
     required TextEditingController controller,
     required int maxLines,
+    required Color textColor,
   }) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white),
+        labelStyle: TextStyle(color: textColor),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: textColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: textColor),
         ),
       ),
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: textColor),
     );
   }
 
@@ -256,18 +261,18 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white),
+          labelStyle: const TextStyle(color: Colors.black),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.black),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.black),
           ),
         ),
         items: items.map((int value) {
           return DropdownMenuItem<int>(
             value: value,
-            child: Text(value.toString(), style: const TextStyle(color: Colors.white)),
+            child: Text(value.toString(), style: const TextStyle(color: Colors.black)),
           );
         }).toList(),
       ),
@@ -280,24 +285,25 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    required Color textColor,
   }) {
     return DropdownButtonFormField<String>(
       value: value,
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white),
+        labelStyle: TextStyle(color: textColor),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: textColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: textColor),
         ),
       ),
       items: items.map((String value) {
         return DropdownMenuItem<String>(
           value: value,
-          child: Text(value, style: const TextStyle(color: Colors.white)),
+          child: Text(value, style: TextStyle(color: textColor)),
         );
       }).toList(),
     );
