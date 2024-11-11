@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'add_dream.dart';
-import 'dream_list.dart';
+import 'add_dream.dart' as add_dream; // Alias for AddDreamScreen import
+import 'dream_list.dart' as dream_list; // Alias for DreamListScreen import
 import 'track_sleep.dart';
 import 'favorite.dart';
 import 'dream_interpretation.dart';
@@ -11,12 +11,7 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true, // Ensures the body extends beneath the AppBar and BottomNavigationBar
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4A90E2),
-        elevation: 0, // Remove the elevation for a flat design
-        centerTitle: true,
-      ),
+      extendBody: true, // Ensures the body extends beneath the BottomNavigationBar
       body: Stack(
         children: [
           // Background image covering the whole screen
@@ -27,98 +22,81 @@ class MainScreen extends StatelessWidget {
             ),
           ),
           // Main content of the screen
-          Column(
-            children: [
-              // Search bar at the top
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search Dreams...',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.8), // Slightly transparent background
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.grey.withOpacity(0.5),
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4A90E2), width: 2.0),
+          Padding(
+            padding: const EdgeInsets.all(16.0),  // Add padding around the GridView
+            child: Column(
+              children: [
+                const SizedBox(height: 40),  // Adjusted space for layout after removing AppBar
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16.0, // Horizontal spacing between cards
+                    mainAxisSpacing: 16.0,  // Vertical spacing between cards
+                    children: [
+                      _buildCard(
+                        context,
+                        'assets/icons/interpret.png', // Custom icon path for Dream Interpretation
+                        'Dream Interpretation',
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const DreamInterpretationScreen()),
+                          );
+                        },
+                      ),
+                      _buildCard(
+                        context,
+                        'assets/icons/track.png', // Custom icon path for Track Sleep
+                        'Track Sleep',
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TrackSleepScreen()),
+                          );
+                        },
+                      ),
+                      _buildCard(
+                        context,
+                        'assets/icons/favorite.png', // Custom icon path for Favorites
+                        'Favorites',
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+                          );
+                        },
+                      ),
+                      _buildCard(
+                        context,
+                        'assets/icons/list.png', // Custom icon path for Dream List
+                        'Dream List',
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const dream_list.DreamListScreen()), // Use alias
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                style: const TextStyle(color: Colors.black, fontSize: 16),
-                onSubmitted: (value) {},
-              ),
-
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 0.0, // No horizontal spacing
-                  mainAxisSpacing: 0.0,  // No vertical spacing
-                  children: [
-                    _buildCard(
-                      context,
-                      'assets/icons/interpret.png', // Custom icon path for Dream Interpretation
-                      'Dream Interpretation',
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const DreamInterpretationScreen()),
-                        );
-                      },
-                    ),
-                    _buildCard(
-                      context,
-                      'assets/icons/track.png', // Custom icon path for Track Sleep
-                      'Track Sleep',
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const TrackSleepScreen()),
-                        );
-                      },
-                    ),
-                    _buildCard(
-                      context,
-                      'assets/icons/favorite.png', // Custom icon path for Favorites
-                      'Favorites',
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const FavoriteScreen()),
-                        );
-                      },
-                    ),
-                    _buildCard(
-                      context,
-                      'assets/icons/list.png', // Custom icon path for Dream List
-                      'Dream List',
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const DreamListScreen()),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddDreamScreen()),
-          );
-        },
-        backgroundColor: const Color(0xFF4A90E2),
-        child: Image.asset('assets/icons/add.png', width: 30, height: 30), // Custom icon for FAB
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 16.0), // Add bottom padding to FAB
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const add_dream.AddDreamScreen()), // Use alias
+            );
+          },
+          backgroundColor: const Color.fromARGB(255, 191, 96, 182),
+          child: Image.asset('assets/icons/add.png', width: 30, height: 30), // Custom icon for FAB
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
@@ -155,8 +133,8 @@ class MainScreen extends StatelessWidget {
             children: [
               Image.asset(
                 iconPath, 
-                width: 50, 
-                height: 50, // Adjust size if necessary
+                width: 60,  // Increase icon size for better visibility
+                height: 60,
               ),
               const SizedBox(height: 10),
               Text(

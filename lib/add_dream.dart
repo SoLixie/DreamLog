@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'db.dart';
+import 'db.dart'; // Make sure this imports the DatabaseHelper and Dream classes
 
 class AddDreamScreen extends StatefulWidget {
   const AddDreamScreen({super.key});
@@ -15,10 +15,10 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
   int _selectedHours = 0;
   int _selectedMinutes = 0;
   String? _selectedDreamType;
-  bool _isFavorite = false; // Favorite option
+  bool _isFavorite = false;
 
-  // Database instance
-  final DBHelper _dbHelper = DBHelper();
+  // Database helper instance
+  final DatabaseHelper _dbHelper = DatabaseHelper();
 
   // Function to generate dream interpretation based on type
   String _generateInterpretation(String dreamType) {
@@ -47,13 +47,12 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
       final dream = Dream(
         title: _titleController.text,
         description: _descriptionController.text,
-        date: DateTime.now().toString(),
-        sleepDuration: _selectedHours + (_selectedMinutes / 60),
+        dreamType: _selectedDreamType!,
+        interpretation: _generateInterpretation(_selectedDreamType!),
         isFavorite: _isFavorite,
-        interpretation: _generateInterpretation(_selectedDreamType!), // Generate interpretation
       );
 
-      // Insert dream into the database
+      // Insert the dream into the database
       await _dbHelper.insertDream(dream);
 
       // Clear the text fields after saving
@@ -90,50 +89,40 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add New Dream'),
-        backgroundColor: const Color(0xFF4A90E2),
-        elevation: 0,
-        centerTitle: true,
-        leading: Container(),
-      ),
       body: Container(
-        height: MediaQuery.of(context).size.height, // Ensure full height of the screen
+        height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/background.png'),
             fit: BoxFit.cover,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: Center(
           child: SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Dream Title
+                _buildSectionTitle('Dream Details'),
                 _buildInputField(
-                  label: 'Dream Title',
+                  label: 'Title',
                   controller: _titleController,
                   maxLines: 1,
-                  textColor: Colors.black,  // Set text color to black for better visibility
+                  textColor: Colors.black,
                 ),
                 const SizedBox(height: 20),
-
-                // Dream Description
                 _buildInputField(
-                  label: 'Dream Description',
+                  label: 'Description',
                   controller: _descriptionController,
                   maxLines: 5,
-                  textColor: Colors.black,  // Set text color to black for better visibility
+                  textColor: Colors.black,
                 ),
                 const SizedBox(height: 20),
-
-                // Sleep Duration (Hours and Minutes)
+                _buildSectionTitle('Duration'),
                 _buildDurationPicker(),
                 const SizedBox(height: 20),
-
-                // Dream Type (Dropdown)
+                _buildSectionTitle('Type and Preferences'),
                 _buildDropdown(
                   label: 'Dream Type',
                   value: _selectedDreamType,
@@ -150,11 +139,9 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                       _selectedDreamType = newValue;
                     });
                   },
-                  textColor: Colors.black,  // Set text color to black for better visibility
+                  textColor: Colors.black,
                 ),
                 const SizedBox(height: 20),
-
-                // Favorite Checkbox
                 Row(
                   children: [
                     Checkbox(
@@ -167,19 +154,18 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                     ),
                     const Text(
                       'Mark as Favorite',
-                      style: TextStyle(color: Colors.black),  // Set text color to black for visibility
+                      style: TextStyle(color: Colors.black),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-
-                // Save Button (Centered)
+                const SizedBox(height: 30),
                 Center(
                   child: ElevatedButton(
                     onPressed: () => _saveDream(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4A90E2),
-                      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 40.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12.0, horizontal: 40.0),
                     ),
                     child: const Text(
                       'Save Dream',
@@ -195,7 +181,20 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
     );
   }
 
-  // Helper method to build the input field
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
   Widget _buildInputField({
     required String label,
     required TextEditingController controller,
@@ -219,7 +218,6 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
     );
   }
 
-  // Helper method to build the duration picker (Hours and Minutes)
   Widget _buildDurationPicker() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -234,6 +232,7 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
           },
           items: List.generate(24, (index) => index),
         ),
+        const SizedBox(width: 10),
         _buildDurationDropdown(
           label: 'Minutes',
           value: _selectedMinutes,
@@ -248,7 +247,6 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
     );
   }
 
-  // Helper method to build the dropdown for Hours and Minutes
   Widget _buildDurationDropdown({
     required String label,
     required int value,
@@ -269,17 +267,22 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
             borderSide: const BorderSide(color: Colors.black),
           ),
         ),
+        icon: Image.asset(
+          'assets/icons/options.png', // Custom icon for duration dropdown
+          width: 24,
+          height: 24,
+        ),
         items: items.map((int value) {
           return DropdownMenuItem<int>(
             value: value,
-            child: Text(value.toString(), style: const TextStyle(color: Colors.black)),
+            child: Text(value.toString(),
+                style: const TextStyle(color: Colors.black)),
           );
         }).toList(),
       ),
     );
   }
 
-  // Helper method to build the dropdown for Dream Type
   Widget _buildDropdown({
     required String label,
     required String? value,
@@ -300,10 +303,15 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
           borderSide: BorderSide(color: textColor),
         ),
       ),
-      items: items.map((String value) {
+      icon: Image.asset(
+        'assets/icons/options.png', // Custom icon for dropdown
+        width: 24,
+        height: 24,
+      ),
+      items: items.map((String item) {
         return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value, style: TextStyle(color: textColor)),
+          value: item,
+          child: Text(item, style: TextStyle(color: textColor)),
         );
       }).toList(),
     );

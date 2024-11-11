@@ -1,89 +1,116 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'dart:async';
 
 class Dream {
-  int? id;
-  String title;
-  String description;
-  String date;
-  double sleepDuration;
-  bool isFavorite;
-  String? interpretation; // Add the interpretation field
+  int? id;  
+  String title;  
+  String? _description;  
+  String dreamType;  
+  String interpretation;  
+  bool isFavorite;  
+  String? date;  
 
   Dream({
     this.id,
     required this.title,
-    required this.description,
-    required this.date,
-    required this.sleepDuration,
-    this.isFavorite = false,
-    this.interpretation, // Add the interpretation parameter
-  });
+    String? description,  
+    required this.dreamType,
+    required this.interpretation,
+    this.isFavorite = false,  
+    this.date,  
+  }) : _description = description;
 
-  // Convert a Dream object into a Map object, including interpretation
+  String get description => _description ?? '';
+
+  set description(String value) {
+    _description = value;
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': title,
-      'description': description,
-      'date': date,
-      'sleepDuration': sleepDuration,
-      'is_favorite': isFavorite ? 1 : 0,
-      'interpretation': interpretation, // Save the interpretation
+      'description': _description,  
+      'dreamType': dreamType,
+      'interpretation': interpretation,
+      'isFavorite': isFavorite ? 1 : 0,  
+      'date': date,  
     };
   }
 
-  // Convert a Map object into a Dream object, including interpretation
   factory Dream.fromMap(Map<String, dynamic> map) {
     return Dream(
       id: map['id'],
       title: map['title'],
-      description: map['description'],
-      date: map['date'],
-      sleepDuration: map['sleepDuration'],
-      isFavorite: map['is_favorite'] == 1,
-      interpretation: map['interpretation'], // Fetch interpretation
+      description: map['description'], 
+      dreamType: map['dreamType'],
+      interpretation: map['interpretation'],
+      isFavorite: map['isFavorite'] == 1,  
+      date: map['date'],  
     );
+  }
+
+  @override
+  String toString() {
+    return 'Dream(id: $id, title: $title, description: $description, dreamType: $dreamType, interpretation: $interpretation, isFavorite: $isFavorite, date: $date)';
   }
 }
 
-class DBHelper {
-  static final DBHelper _instance = DBHelper._internal();
-  factory DBHelper() => _instance;
-  
-  DBHelper._internal();
-
-  Database? _database;
+class DatabaseHelper {
+  static Database? _database;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB();
+    _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> _initDB() async {
-    String path = join(await getDatabasesPath(), 'dreams.db');
+  Future<Database> _initDatabase() async {
     return await openDatabase(
-      path,
-      version: 3, // Increment version to 3 for schema update
+      'dreams.db',  
+      version: 2,  
       onCreate: (db, version) async {
-        // Create the table with the is_favorite and interpretation columns
-        await db.execute(
-          'CREATE TABLE dreams(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, date TEXT, sleepDuration REAL, is_favorite INTEGER, interpretation TEXT)',
-        );
+        await db.execute('''
+          CREATE TABLE dreams(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            description TEXT,
+            dreamType TEXT,
+            interpretation TEXT,
+            isFavorite INTEGER,
+            date TEXT
+          )
+        ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        // Handle database upgrade (e.g., adding the interpretation and is_favorite columns)
-        if (oldVersion < 3) {
-          await db.execute(
-            'ALTER TABLE dreams ADD COLUMN interpretation TEXT', // Add interpretation column
-          );
+        if (oldVersion < 2) {
+          await db.execute('''
+            ALTER TABLE dreams ADD COLUMN date TEXT
+          ''');
         }
       },
     );
   }
 
-  Future<List<Dream>> getDreams() async {
+  Future<int> insertDream(Dream dream) async {
+    final db = await database;
+    return await db.insert('dreams', dream.toMap());
+  }
+
+  Future<Dream?> getDreamById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'dreams',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isNotEmpty) {
+      return Dream.fromMap(maps.first);
+    }
+    return null;
+  }
+
+  Future<List<Dream>> getAllDreams() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('dreams');
     return List.generate(maps.length, (i) {
@@ -91,18 +118,9 @@ class DBHelper {
     });
   }
 
-  Future<void> insertDream(Dream dream) async {
+  Future<int> updateDream(Dream dream) async {
     final db = await database;
-    await db.insert(
-      'dreams',
-      dream.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<void> updateDream(Dream dream) async {
-    final db = await database;
-    await db.update(
+    return await db.update(
       'dreams',
       dream.toMap(),
       where: 'id = ?',
@@ -110,33 +128,31 @@ class DBHelper {
     );
   }
 
-  Future<void> deleteDream(int id) async {
+  Future<int> deleteDream(int id) async {
     final db = await database;
-    await db.delete(
+    return await db.delete(
       'dreams',
       where: 'id = ?',
       whereArgs: [id],
     );
   }
 
-  // Method to update the favorite status of a dream
-  Future<void> updateFavoriteStatus(int dreamId, bool isFavorite) async {
+  Future<int> toggleFavorite(int id) async {
     final db = await database;
-    await db.update(
-      'dreams',
-      {'is_favorite': isFavorite ? 1 : 0}, // Update the favorite status
-      where: 'id = ?',
-      whereArgs: [dreamId],
-    );
+    final dream = await getDreamById(id);
+    if (dream != null) {
+      dream.isFavorite = !dream.isFavorite;
+      return await updateDream(dream);
+    }
+    return 0;
   }
 
-  // Additional method to get only favorite dreams
-  Future<List<Dream>> getFavoriteDreams() async {
+  Future<List<Dream>> searchDreams(String query) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'dreams',
-      where: 'is_favorite = ?',
-      whereArgs: [1], // Only get favorites
+      where: 'title LIKE ? OR description LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
     );
     return List.generate(maps.length, (i) {
       return Dream.fromMap(maps[i]);

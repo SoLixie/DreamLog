@@ -31,6 +31,7 @@ flutter:
   assets:
     - assets/images/splash.gif
     - assets/images/background.png
+    - assets/images/bg.png
     - assets/icons/home.png
     - assets/icons/add.png
     - assets/icons/setting.png
@@ -43,3 +44,9 @@ flutter:
     - assets/icons/stop.png
     - assets/icons/nightlight.png
     - assets/icons/play.png
+    - assets/icons/delete.png
+    - assets/icons/edit.png
+    - assets/icons/favorite_icon.png
+    - assets/icons/favorite_border_icon.png
+    - assets/icons/options.png
+    - assets/icons/search.png
