@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'db.dart'; // Import the DB helper
 
 class DreamListScreen extends StatefulWidget {
-  const DreamListScreen({Key? key}) : super(key: key);
+  const DreamListScreen({super.key});
 
   @override
   _DreamListScreenState createState() => _DreamListScreenState();

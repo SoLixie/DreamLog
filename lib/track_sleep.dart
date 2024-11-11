@@ -20,58 +20,60 @@ class _TrackSleepScreenState extends State<TrackSleepScreen> {
   bool isAsleep = false; // To store whether the user is asleep or not
   Duration trackingDuration = Duration.zero; // To track the duration of sleep
 
-  // Function to toggle the sleep tracking
-  void _toggleSleepTracking() {
-    setState(() {
-      if (isTracking) {
-        sleepEndTime = DateTime.now();
-        trackingDuration = sleepEndTime.difference(sleepStartTime);
-        _accelerometerSubscription.cancel(); // Stop tracking
-      } else {
-        sleepStartTime = DateTime.now();
-        trackingDuration = Duration.zero; // Reset duration when starting
-        _startSensorTracking(); // Start tracking sensors
-      }
-      isTracking = !isTracking;
-    });
-  }
-
   // Function to start accelerometer sensor tracking
   void _startSensorTracking() {
     _accelerometerSubscription = accelerometerEvents.listen((AccelerometerEvent event) {
       // Calculate the magnitude of movement based on x, y, z accelerometer values
       double magnitude = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
 
-      // Check if the magnitude is less than the threshold (indicating little to no movement)
+      // If the magnitude stays below a certain threshold (indicating the person is still), we assume they're asleep
       if (magnitude < movementThreshold) {
-        // If magnitude stays low for a certain amount of time, assume the user is asleep
         if (!isAsleep) {
-          isAsleep = true;
-          print("User likely asleep");
+          // The person is likely asleep, so we start tracking sleep
+          setState(() {
+            isAsleep = true;
+            sleepStartTime = DateTime.now(); // Mark the time when sleep started
+            isTracking = true; // Start tracking sleep duration
+          });
+          print("User likely asleep, tracking started.");
         }
       } else {
-        // If movement is detected, reset the sleep state
+        // If movement is detected, stop tracking (indicating the person is awake or moving)
         if (isAsleep) {
-          isAsleep = false;
-          print("User moving, not asleep");
+          setState(() {
+            isAsleep = false;
+            sleepEndTime = DateTime.now(); // Record the wake-up time
+            trackingDuration = sleepEndTime.difference(sleepStartTime); // Calculate duration
+            isTracking = false; // Stop tracking
+          });
+          print("User moving, sleep tracking stopped.");
         }
       }
 
-      // Store previous magnitude for future comparison
-      previousMagnitude = magnitude;
+      if (isTracking) {
+        // If tracking is active, continuously update the sleep duration
+        setState(() {
+          trackingDuration = DateTime.now().difference(sleepStartTime);
+        });
+      }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startSensorTracking(); // Start accelerometer tracking as soon as the screen loads
+  }
+
+  @override
+  void dispose() {
+    _accelerometerSubscription.cancel(); // Clean up accelerometer subscription
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Track Sleep Duration'),
-        backgroundColor: const Color(0xFF1E1E78),
-        elevation: 0,
-        centerTitle: true,
-        leading: Container(),
-      ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -112,20 +114,6 @@ class _TrackSleepScreenState extends State<TrackSleepScreen> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            onPressed: _toggleSleepTracking,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2C2C54),
-                              minimumSize: const Size(200, 50),
-                            ),
-                            icon: Image.asset(
-                              'assets/icons/stop.png', // Custom stop timer icon
-                              width: 30,
-                              height: 30,
-                            ),
-                            label: const Text('Stop Tracking'),
-                          ),
                         ],
                       )
                     : Column(
@@ -138,29 +126,15 @@ class _TrackSleepScreenState extends State<TrackSleepScreen> {
                           ),
                           const SizedBox(height: 20),
                           const Text(
-                            'Start tracking your sleep!',
+                            'Waiting for you to fall asleep...',
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.white,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            onPressed: _toggleSleepTracking,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2C2C54),
-                              minimumSize: const Size(200, 50),
-                            ),
-                             icon: Image.asset(
-                              'assets/icons/play.png', // Custom stop timer icon
-                              width: 30,
-                              height: 30,
-                            ),
-                            label: const Text('Start Tracking'),
-                          ),
                         ],
-                      )
+                      ),
               ],
             ),
           ),

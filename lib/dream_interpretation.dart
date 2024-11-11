@@ -16,30 +16,39 @@ class _DreamInterpretationScreenState extends State<DreamInterpretationScreen> {
 
   // Function to fetch interpretation from the API
   Future<void> _getInterpretation() async {
+    final requestBody = jsonEncode({
+      'inputs': "Interpret this dream: ${_controller.text}",
+    });
+
     final response = await http.post(
-      Uri.parse('https://jaspreet04-dreaminterpreter.hf.space/run/predict'),
+      Uri.parse('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta'),
       headers: {
-        'Authorization':
-            'Bearer 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', // Replace with your actual token
+        'Authorization': 'Bearer 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', // Replace with your actual token
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'data': [
-          _controller.text
-        ], // 'data' is often the key in Hugging Face models
-      }),
+      body: requestBody,
     );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      setState(() {
-        _interpretation = data['data'][0] ??
-            'No interpretation found.'; // Use correct key here
-      });
+
+      // Log the raw response to check the structure
+      print("Response: ${response.body}");
+
+      // Check if the response contains generated text
+      if (data.isNotEmpty && data[0].containsKey('generated_text')) {
+        setState(() {
+          _interpretation = data[0]['generated_text'] ??
+              'No interpretation found.'; // Use correct key here
+        });
+      } else {
+        setState(() {
+          _interpretation = 'Failed to interpret dream.';
+        });
+      }
     } else {
       setState(() {
-        _interpretation =
-            'Failed to load interpretation. Status: ${response.statusCode}';
+        _interpretation = 'Failed to load interpretation. Status: ${response.statusCode}';
       });
     }
   }
@@ -47,110 +56,113 @@ class _DreamInterpretationScreenState extends State<DreamInterpretationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-                'assets/images/background.png'), // Replace with your image path
-            fit: BoxFit.cover,
+      body: SingleChildScrollView( // Make the entire body scrollable
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/background.png'), // Replace with your image path
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Space at the top
-            const SizedBox(height: 100),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Space at the top
+              const SizedBox(height: 100),
 
-            // Title
-            const Text(
-              'Enter your dream description:',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 20.0),
-
-            // Dream Description Input Field
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10.0,
-                    spreadRadius: 2.0,
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  labelText: 'Dream Description',
-                  labelStyle: TextStyle(color: Colors.black54),
-                ),
-                maxLines: 5,
-                style: const TextStyle(color: Colors.black),
-              ),
-            ),
-            const SizedBox(height: 20.0),
-
-            // Get Interpretation Button
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 191, 96, 182),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 5, // Slight shadow
-                ),
-                onPressed: _getInterpretation,
-                child: const Text(
-                  'Get Interpretation',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+              // Title
+              const Text(
+                'Enter your dream description:',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
                 ),
               ),
-            ),
-            const SizedBox(height: 30.0),
+              const SizedBox(height: 20.0),
 
-            // Display Interpretation
-            if (_interpretation.isNotEmpty)
+              // Dream Description Input Field
               Container(
-                padding: const EdgeInsets.all(20.0),
-                margin: const EdgeInsets.symmetric(vertical: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(15.0),
+                  color: Colors.white.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(12.0),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8.0,
+                      blurRadius: 10.0,
                       spreadRadius: 2.0,
                     ),
                   ],
                 ),
-                child: Text(
-                  _interpretation,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.black87,
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    labelText: 'Dream Description',
+                    labelStyle: TextStyle(color: Colors.black54),
+                  ),
+                  maxLines: 5,
+                  style: const TextStyle(color: Colors.black),
+                ),
+              ),
+              const SizedBox(height: 20.0),
+
+              // Get Interpretation Button
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 191, 96, 182),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 5, // Slight shadow
+                  ),
+                  onPressed: _getInterpretation,
+                  child: const Text(
+                    'Get Interpretation',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ),
               ),
-          ],
+              const SizedBox(height: 30.0),
+
+              // Display Interpretation
+              if (_interpretation.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  margin: const EdgeInsets.symmetric(vertical: 20.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(15.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8.0,
+                        spreadRadius: 2.0,
+                      ),
+                    ],
+                  ),
+                  child: SingleChildScrollView(  // Allow the text to scroll
+                    child: Text(
+                      _interpretation,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -53,17 +53,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   // Navigate to Dream Detail Screen (without edit or delete options)
   void _showDreamDetails(Dream dream) {
-    if (dream != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DetailScreen(dream: dream),
-        ),
-      );
-    } else {
-      debugPrint("Dream is null, cannot navigate to details.");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailScreen(dream: dream),
+      ),
+    );
     }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +154,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 class DetailScreen extends StatelessWidget {
   final Dream dream;
 
-  DetailScreen({required this.dream});
+  const DetailScreen({super.key, required this.dream});
 
   @override
   Widget build(BuildContext context) {
