@@ -160,16 +160,22 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
                 ),
                 const SizedBox(height: 30),
                 Center(
-                  child: ElevatedButton(
-                    onPressed: () => _saveDream(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4A90E2),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12.0, horizontal: 40.0),
-                    ),
-                    child: const Text(
-                      'Save Dream',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                  child: GestureDetector(
+                    onTap: () => _saveDream(context),
+                    child: Container(
+                      width: 250,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: _buttonDecoration(),
+                      child: const Center(
+                        child: Text(
+                          'Save Dream',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -178,6 +184,29 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // Button decoration styling (same as in SettingsScreen)
+  BoxDecoration _buttonDecoration() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(30),
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF4A90E2),
+          Color(0xFF7F57C2),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          spreadRadius: 4,
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
     );
   }
 
@@ -303,15 +332,13 @@ class _AddDreamScreenState extends State<AddDreamScreen> {
           borderSide: BorderSide(color: textColor),
         ),
       ),
-      icon: Image.asset(
-        'assets/icons/options.png', // Custom icon for dropdown
-        width: 24,
-        height: 24,
-      ),
       items: items.map((String item) {
         return DropdownMenuItem<String>(
           value: item,
-          child: Text(item, style: TextStyle(color: textColor)),
+          child: Text(
+            item,
+            style: TextStyle(color: textColor),
+          ),
         );
       }).toList(),
     );

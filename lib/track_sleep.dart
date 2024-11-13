@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:math';
+import 'package:sqflite/sqflite.dart';
 
+// The class for tracking the sleep
 class TrackSleepScreen extends StatefulWidget {
   const TrackSleepScreen({super.key});
 
@@ -11,47 +13,45 @@ class TrackSleepScreen extends StatefulWidget {
 }
 
 class _TrackSleepScreenState extends State<TrackSleepScreen> {
-  bool isTracking = false; // To track the sleep state
+  bool isTracking = false;
   DateTime sleepStartTime = DateTime.now();
   DateTime sleepEndTime = DateTime.now();
   late StreamSubscription<AccelerometerEvent> _accelerometerSubscription;
-  double previousMagnitude = 0; // To track the magnitude of movement
-  final double movementThreshold = 1.5; // Adjust based on sensitivity
-  bool isAsleep = false; // To store whether the user is asleep or not
-  Duration trackingDuration = Duration.zero; // To track the duration of sleep
+  double previousMagnitude = 0;
+  final double movementThreshold = 1.5;
+  bool isAsleep = false;
+  Duration trackingDuration = Duration.zero;
 
-  // Function to start accelerometer sensor tracking
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+
+  // Function to start tracking using the accelerometer
   void _startSensorTracking() {
     _accelerometerSubscription = accelerometerEvents.listen((AccelerometerEvent event) {
-      // Calculate the magnitude of movement based on x, y, z accelerometer values
       double magnitude = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
 
-      // If the magnitude stays below a certain threshold (indicating the person is still), we assume they're asleep
       if (magnitude < movementThreshold) {
         if (!isAsleep) {
-          // The person is likely asleep, so we start tracking sleep
           setState(() {
             isAsleep = true;
-            sleepStartTime = DateTime.now(); // Mark the time when sleep started
-            isTracking = true; // Start tracking sleep duration
+            sleepStartTime = DateTime.now();
+            isTracking = true;
           });
           print("User likely asleep, tracking started.");
         }
       } else {
-        // If movement is detected, stop tracking (indicating the person is awake or moving)
         if (isAsleep) {
           setState(() {
             isAsleep = false;
-            sleepEndTime = DateTime.now(); // Record the wake-up time
-            trackingDuration = sleepEndTime.difference(sleepStartTime); // Calculate duration
-            isTracking = false; // Stop tracking
+            sleepEndTime = DateTime.now();
+            trackingDuration = sleepEndTime.difference(sleepStartTime);
+            isTracking = false;
           });
           print("User moving, sleep tracking stopped.");
+          _saveSleepData(); // Save sleep data when tracking ends
         }
       }
 
       if (isTracking) {
-        // If tracking is active, continuously update the sleep duration
         setState(() {
           trackingDuration = DateTime.now().difference(sleepStartTime);
         });
@@ -59,25 +59,38 @@ class _TrackSleepScreenState extends State<TrackSleepScreen> {
     });
   }
 
+  // Function to save sleep data to the database
+  Future<void> _saveSleepData() async {
+    final sleepData = SleepData(
+      startTime: sleepStartTime.toIso8601String(),
+      endTime: sleepEndTime.toIso8601String(),
+      duration: trackingDuration.inMinutes,
+    );
+    await _databaseHelper.insertSleepData(sleepData);
+    print("Sleep data saved.");
+  }
+
   @override
   void initState() {
     super.initState();
-    _startSensorTracking(); // Start accelerometer tracking as soon as the screen loads
+    _startSensorTracking();
   }
 
   @override
   void dispose() {
-    _accelerometerSubscription.cancel(); // Clean up accelerometer subscription
+    _accelerometerSubscription.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurpleAccent,
       body: Container(
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/background.png'), // Add your image path here
+            image: AssetImage('assets/images/background.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -96,49 +109,167 @@ class _TrackSleepScreenState extends State<TrackSleepScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                isTracking
-                    ? Column(
-                        children: [
-                          // Replace the timer icon with a custom or another icon
-                          Image.asset(
-                            'assets/icons/timer.png', // Replace with your custom icon path
-                            width: 80,
-                            height: 80,
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Tracking Duration: ${trackingDuration.inMinutes} minutes',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          // Replace the nightlight icon with a custom or another icon
-                          Image.asset(
-                            'assets/icons/nightlight.png', // Replace with your custom icon path
-                            width: 80,
-                            height: 80,
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'Waiting for you to fall asleep...',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                // Show tracking duration while tracking is active
+                if (isTracking)
+                  Column(
+                    children: [
+                      Image.asset(
+                        'assets/icons/timer.png',
+                        width: 80,
+                        height: 80,
                       ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Tracking Duration: ${trackingDuration.inMinutes} min',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'You\'re asleep!',
+                        style: TextStyle(
+                          fontSize: 22,
+                          color: Colors.greenAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Column(
+                    children: [
+                      Image.asset(
+                        'assets/icons/nightlight.png',
+                        width: 80,
+                        height: 80,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Waiting for you to fall asleep...',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Sleep History Button for accessing history screen
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SleepHistoryScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text('View Sleep History'),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Sleep Data Model
+class SleepData {
+  final String startTime;
+  final String endTime;
+  final int duration;
+
+  SleepData({
+    required this.startTime,
+    required this.endTime,
+    required this.duration,
+  });
+}
+
+// Database Helper Class (to interact with the database)
+class DatabaseHelper {
+  static Database? _database;
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    return await openDatabase(
+      'sleep_data.db', 
+      version: 1, 
+      onCreate: (db, version) async {
+        await db.execute(''' 
+          CREATE TABLE sleep_data(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            startTime TEXT,
+            endTime TEXT,
+            duration INTEGER
+          )
+        ''');
+      },
+    );
+  }
+
+  Future<int> insertSleepData(SleepData sleepData) async {
+    final db = await database;
+    return await db.insert('sleep_data', {
+      'startTime': sleepData.startTime,
+      'endTime': sleepData.endTime,
+      'duration': sleepData.duration,
+    });
+  }
+
+  Future<List<SleepData>> getAllSleepData() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('sleep_data');
+    return List.generate(maps.length, (i) {
+      return SleepData(
+        startTime: maps[i]['startTime'],
+        endTime: maps[i]['endTime'],
+        duration: maps[i]['duration'],
+      );
+    });
+  }
+}
+
+class SleepHistoryScreen extends StatelessWidget {
+  const SleepHistoryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Sleep History")),
+      body: FutureBuilder<List<SleepData>>(
+        future: DatabaseHelper().getAllSleepData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No sleep data found"));
+          }
+
+          final sleepData = snapshot.data!;
+          return ListView.builder(
+            itemCount: sleepData.length,
+            itemBuilder: (context, index) {
+              final data = sleepData[index];
+              return ListTile(
+                title: Text("Duration: ${data.duration} minutes"),
+                subtitle: Text("Start: ${data.startTime}\nEnd: ${data.endTime}"),
+              );
+            },
+          );
+        },
       ),
     );
   }

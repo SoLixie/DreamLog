@@ -1,12 +1,11 @@
 # This is a generated file; do not edit or check into version control.
-device_info_plus=/Users/mlab01/.pub-cache/hosted/pub.dev/device_info_plus-10.1.2/
-google_fit=/Users/mlab01/.pub-cache/hosted/pub.dev/google_fit-0.0.0/
-health=/Users/mlab01/.pub-cache/hosted/pub.dev/health-11.1.0/
-sensors_plus=/Users/mlab01/.pub-cache/hosted/pub.dev/sensors_plus-6.1.0/
-sqflite=/Users/mlab01/.pub-cache/hosted/pub.dev/sqflite-2.4.0/
-sqflite_android=/Users/mlab01/.pub-cache/hosted/pub.dev/sqflite_android-2.4.0/
-sqflite_darwin=/Users/mlab01/.pub-cache/hosted/pub.dev/sqflite_darwin-2.4.1-1/
-video_player=/Users/mlab01/.pub-cache/hosted/pub.dev/video_player-2.9.2/
-video_player_android=/Users/mlab01/.pub-cache/hosted/pub.dev/video_player_android-2.7.16/
-video_player_avfoundation=/Users/mlab01/.pub-cache/hosted/pub.dev/video_player_avfoundation-2.6.2/
-video_player_web=/Users/mlab01/.pub-cache/hosted/pub.dev/video_player_web-2.3.3/
+device_info_plus=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\device_info_plus-10.1.2\\
+health=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\health-11.1.0\\
+sensors_plus=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\sensors_plus-6.1.0\\
+sqflite=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\sqflite-2.4.0\\
+sqflite_android=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\sqflite_android-2.4.0\\
+sqflite_darwin=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\sqflite_darwin-2.4.1-1\\
+video_player=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\video_player-2.9.2\\
+video_player_android=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\video_player_android-2.7.16\\
+video_player_avfoundation=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\video_player_avfoundation-2.6.2\\
+video_player_web=C:\\Users\\scarl\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\video_player_web-2.3.3\\
